@@ -1,0 +1,76 @@
+# PRO DETAILERS — public web access
+# Customer-facing content is intentionally crawlable by legitimate search and AI discovery systems.
+# No customer-facing section is intentionally blocked here.
+
+User-agent: *
+Allow: /
+
+# OpenAI / ChatGPT
+User-agent: OAI-SearchBot
+Allow: /
+User-agent: GPTBot
+Allow: /
+User-agent: ChatGPT-User
+Allow: /
+
+# Google Search / Gemini ecosystem
+User-agent: Googlebot
+Allow: /
+User-agent: Google-CloudVertexBot
+Allow: /
+# Google-Extended is a robots.txt control token for Google's generative-AI use.
+User-agent: Google-Extended
+Allow: /
+
+# Microsoft / Bing ecosystem
+User-agent: bingbot
+Allow: /
+
+# Anthropic / Claude
+User-agent: ClaudeBot
+Allow: /
+User-agent: Claude-SearchBot
+Allow: /
+User-agent: Claude-User
+Allow: /
+
+# Perplexity
+User-agent: PerplexityBot
+Allow: /
+User-agent: Perplexity-User
+Allow: /
+
+# Meta / Facebook / Instagram discovery
+User-agent: Meta-ExternalAgent
+Allow: /
+User-agent: Meta-ExternalFetcher
+Allow: /
+User-agent: FacebookBot
+Allow: /
+
+# Apple / DuckDuckGo / Amazon / Mistral / Common Crawl
+User-agent: Applebot
+Allow: /
+User-agent: DuckAssistBot
+Allow: /
+User-agent: Amazonbot
+Allow: /
+User-agent: Amzn-SearchBot
+Allow: /
+User-agent: Amzn-User
+Allow: /
+User-agent: MistralAI-User
+Allow: /
+User-agent: CCBot
+Allow: /
+
+# ByteDance/TikTok ecosystem
+User-agent: Bytespider
+Allow: /
+
+# xAI / Grok:
+# xAI's current public documentation does not publish a dedicated web-crawler
+# user-agent. Do not invent a bot allowlist; the generic rule above keeps public
+# pages crawlable while Cloudflare security controls remain responsible for abuse protection.
+
+Sitemap: https://prodetailers.in/sitemap.xml
