@@ -7,7 +7,8 @@
 const PLACE_ID = "ChIJ4VgWWKqDzzsRugUdWzycYPE";
 const ALLOWED_ORIGINS = new Set([
   "https://prodetailers.in",
-  "https://www.prodetailers.in"
+  "https://www.prodetailers.in",
+  "https://pro-detailers-google-reviews-v4-test.shelkesachin27.workers.dev"
 ]);
 
 function securityHeaders(headers = {}) {
