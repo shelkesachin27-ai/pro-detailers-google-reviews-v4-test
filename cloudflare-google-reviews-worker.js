@@ -58,7 +58,7 @@ export default {
     const body = await upstream.text();
     const headers = new Headers({
       "content-type": "application/json; charset=utf-8",
-      "cache-control": "public, max-age=900, s-maxage=900",
+      "cache-control": "public, max-age=300, s-maxage=21600, stale-if-error=86400",
       "access-control-allow-origin": ALLOWED_ORIGINS.has(origin) ? origin : "https://prodetailers.in",
       "vary": "Origin"
     });

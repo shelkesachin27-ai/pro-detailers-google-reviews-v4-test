@@ -1,0 +1,106 @@
+PRO DETAILERS — V4.30 TEST BUILD
+================================
+Base: PRO_DETAILERS_GOOGLE_REVIEWS_WORKER_TEST_V4_OFFERS_BOOKING_UPDATED.zip
+Purpose: TEST-ONLY build. The live main website/domain is not changed by this ZIP.
+
+PROJECT HISTORY PRESERVED
+-------------------------
+1. Existing PRO DETAILERS website layout and Marathi-first content are preserved.
+2. Existing SEO/public URL structure and page sections are preserved in the supplied V4 test base.
+3. Existing exact PRO DETAILERS logo/assets and local automotive background treatment are preserved.
+4. Existing offers, pricing, booking, PPF/service content and footer links in the supplied V4 test base are preserved.
+5. Google Places live-review integration was added to the test Worker using Place ID:
+   ChIJ4VgWWKqDzzsRugUdWzycYPE
+6. The public Worker endpoint is /api/google-reviews.
+7. Google Places is called from the Worker, not directly from browser code, so the API secret is kept server-side.
+8. Cloudflare runtime secret expected by the Worker:
+   GOOGLE_PLACES_API_KEY
+   The actual key is NOT stored in this ZIP.
+9. Cloudflare Static Assets + ASSETS binding + /api/* Worker-first routing are preserved.
+10. Asset-upload failures caused by repository/build files were addressed with .assetsignore.
+    Current exclusions include node_modules, .wrangler, .git and Worker/configuration files.
+11. The working test Worker name remains:
+    pro-detailers-google-reviews-test
+
+V4.29 BASE FEATURES RETAINED
+------------
+A. GOOGLE REVIEWS — 6-HOUR EDGE CACHE
+   - Successful Google Places review responses are cached for 6 hours.
+   - The cache key separates CORS origins when needed.
+   - X-Pro-Detailers-Review-Cache is exposed for testing: HIT / MISS / STORED.
+   - Failed Google responses are not cached.
+   - Browser fetch remains no-store so the Worker controls the cache policy.
+   - Cloudflare Cache API is edge-local; therefore it reduces repeated API calls but is not a mathematical guarantee of exactly 4 Google API calls per day worldwide.
+
+B. GOOGLE REVIEW CARDS — COMPACT PREMIUM SIZE
+   - Reduced card padding.
+   - Reduced review text size and line height.
+   - Reduced avatar and metadata size.
+   - Reduced minimum card height.
+   - Five-card desktop presentation is preserved.
+   - Mobile cards remain readable and less bulky.
+
+C. FIXED SOCIAL MEDIA RAIL
+   - Instagram, Facebook, YouTube, WhatsApp and Google Maps are fixed on the right side while scrolling.
+   - Desktop buttons: 40px.
+   - Mobile buttons: 36px.
+   - Compact spacing and dark translucent premium treatment.
+   - Separate from the existing website sound control.
+
+D. SUBTLE MOBILE GYROSCOPE / TILT PARALLAX
+   - New premium-motion.js file.
+   - Hero background responds to device tilt with a subtle maximum movement of about 9px horizontally and 7px vertically.
+   - Smooth interpolation prevents jerky movement.
+   - iOS permission is requested only after user interaction.
+   - prefers-reduced-motion disables the effect.
+   - Unsupported/denied motion access leaves the website in its normal static state.
+
+E. VERSIONING
+   - CSS cache-buster changed to v=4.29.0.
+   - New file: premium-motion.js
+   - New file: V4.29_CHANGELOG.txt
+   - New file: README_V4.29_TEST.txt
+
+SECURITY / SECRET HANDLING
+--------------------------
+- No real Google API key is included in source files or this ZIP.
+- Keep GOOGLE_PLACES_API_KEY as a Cloudflare Worker Secret.
+- Do not paste the secret into GitHub files.
+- The Place ID is public business metadata and is intentionally present in the Worker.
+
+TEST DEPLOYMENT
+---------------
+1. Keep the live Main Worker/domain untouched while testing.
+2. Use the test Worker: pro-detailers-google-reviews-v4-test.
+3. Confirm GOOGLE_PLACES_API_KEY exists as a Production Worker Secret.
+4. Deploy with: npx wrangler deploy
+5. Open the test workers.dev homepage.
+6. Verify live Google Reviews.
+7. Verify /api/google-reviews returns JSON.
+8. Repeat /api/google-reviews and inspect X-Pro-Detailers-Review-Cache; after the first successful request, HIT indicates the cached response was served at that edge.
+9. Scroll the page and verify the social rail remains fixed.
+10. On a supported mobile device, tilt the phone gently and verify only the hero background moves subtly.
+11. Do NOT switch the Main Worker until this test build is fully approved.
+
+CLOUDFLARE ASSET NOTE
+---------------------
+The project intentionally uses assets.directory="." because the current V4 Worker serves the complete site from the project root. .assetsignore must remain in place to keep build/configuration files out of public static assets. Cloudflare documents .assetsignore as gitignore-style asset exclusions.
+
+
+V4.30 ADDITIONS
+---------------
+F. BILLING-FREE GOOGLE LOCATION
+   - Added a compact premium "Find Us / आमच्याकडे या" section.
+   - Uses the existing public Google Maps URL and Place ID.
+   - Get Directions uses a Google Maps URL; Open in Google Maps uses the existing business link.
+   - No Google Maps Embed API is used.
+   - No new Maps API key or Maps billing setup is required.
+
+G. CACHE CONSISTENCY
+   - The main worker already uses the V4.29 6-hour Cache API implementation.
+   - The secondary cloudflare-google-reviews-worker.js helper is aligned to a 6-hour s-maxage policy as well.
+
+H. MAIN WEBSITE SAFETY
+   - This remains a TEST-ONLY ZIP.
+   - The live Main Worker/domain is not changed by this ZIP.
+   - Existing V4.29 Reviews, compact cards, fixed social rail and gyroscope/parallax are retained unchanged.
