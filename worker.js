@@ -5,10 +5,10 @@
  */
 
 const PLACE_ID = "ChIJ4VgWWKqDzzsRugUdWzycYPE";
+const REVIEW_CACHE_TTL = 6 * 60 * 60; // 6 hours
 const ALLOWED_ORIGINS = new Set([
   "https://prodetailers.in",
-  "https://www.prodetailers.in",
-  "https://pro-detailers-google-reviews-v4-test.shelkesachin27.workers.dev"
+  "https://www.prodetailers.in"
 ]);
 
 function securityHeaders(headers = {}) {
@@ -31,19 +31,29 @@ function corsHeaders(origin) {
   return headers;
 }
 
-function json(data, status, origin) {
+function json(data, status, origin, cacheState = "BYPASS") {
   return new Response(JSON.stringify(data), {
     status,
     headers: securityHeaders({
       "Content-Type": "application/json; charset=utf-8",
-      "Cache-Control": "public, max-age=300, s-maxage=300",
+      "Cache-Control": status === 200
+        ? `public, max-age=300, s-maxage=${REVIEW_CACHE_TTL}, stale-if-error=86400`
+        : "no-store",
+      "X-Pro-Detailers-Review-Cache": cacheState,
       ...corsHeaders(origin)
     })
   });
 }
 
+function reviewCacheRequest(request, origin) {
+  const cacheUrl = new URL(request.url);
+  // Keep CORS responses separated when the same endpoint is used by multiple origins.
+  cacheUrl.searchParams.set("__review_origin", origin || "none");
+  return new Request(cacheUrl.toString(), { method: "GET" });
+}
+
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const origin = request.headers.get("Origin") || "";
 
@@ -70,6 +80,21 @@ export default {
       ].join(",");
 
       const googleUrl = `https://places.googleapis.com/v1/places/${PLACE_ID}?fields=${encodeURIComponent(fields)}`;
+      const cache = caches.default;
+      const cacheKey = reviewCacheRequest(request, origin);
+
+      // Serve the last successful Google response for up to 6 hours.
+      const cachedResponse = await cache.match(cacheKey);
+      if (cachedResponse) {
+        return new Response(cachedResponse.body, {
+          status: cachedResponse.status,
+          statusText: cachedResponse.statusText,
+          headers: securityHeaders({
+            ...Object.fromEntries(cachedResponse.headers),
+            "X-Pro-Detailers-Review-Cache": "HIT"
+          })
+        });
+      }
 
       try {
         const googleResponse = await fetch(googleUrl, {
@@ -94,7 +119,7 @@ export default {
         }
 
         // Return only fields needed by the public website.
-        return json({
+        const payload = {
           displayName: data.displayName || null,
           rating: data.rating || null,
           userRatingCount: data.userRatingCount || null,
@@ -111,7 +136,22 @@ export default {
             } : null,
             googleMapsUri: review.googleMapsUri || null
           })) : []
-        }, 200, origin);
+        };
+
+        const response = json(payload, 200, origin, "MISS");
+        // Cache only successful Google responses. waitUntil keeps the user response fast.
+        const cacheResponse = response.clone();
+        const cacheStore = new Response(cacheResponse.body, {
+          status: cacheResponse.status,
+          statusText: cacheResponse.statusText,
+          headers: new Headers(cacheResponse.headers)
+        });
+        cacheStore.headers.set("Cache-Control", `public, max-age=${REVIEW_CACHE_TTL}, s-maxage=${REVIEW_CACHE_TTL}, stale-if-error=86400`);
+        cacheStore.headers.set("X-Pro-Detailers-Review-Cache", "STORED");
+        if (typeof caches !== "undefined" && caches.default) {
+          ctx.waitUntil(cache.put(cacheKey, cacheStore));
+        }
+        return response;
       } catch (error) {
         return json({ error: { message: "Unable to reach Google Places API." } }, 502, origin);
       }
